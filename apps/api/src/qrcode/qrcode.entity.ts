@@ -13,7 +13,7 @@ export class QRCode {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 500 })
   qr_code: string;
 
   @Column({ type: 'varchar', length: 255 })
