@@ -1,4 +1,3 @@
-
 const
     el = {},
     usingOffscreenCanvas = isOffscreenCanvasWorking();
@@ -35,31 +34,38 @@ function checkQRCodeValidity(qrCode) {
     };
 
     if (qrCode) {
-        fetch(apiUrl, fetchOptions)
-            .then(response => {
-                if (!response.ok) {
-                    if (response.status === 400) {
-                        el.result.innerText = 'Invalid QR code';
-                        el.canvas.style.display = 'none';
-                        throw new Error('Bad Request - Invalid QR code');
-                    } else {
-                        el.result.innerText = 'Invalid QR code';
-                        el.canvas.style.display = 'none';
-                        throw new Error('Bad Request - Invalid QR code');
+        if (el.status.innerText != 'Validating QR code...' || el.result.innerText != '') {
+            fetch(apiUrl, fetchOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 400) {
+                            if (el.result.innerText != '' && el.result.innerText != 'Invalid QR code') {
+                                el.result.innerText = 'Invalid QR code';
+                                el.canvas.style.display = 'none';
+                            }
+                            throw new Error('Bad Request - Invalid QR code');
+                        } else {
+                            if (el.result.innerText != '' && el.result.innerText != 'Invalid QR code') {
+                                el.result.innerText = 'Invalid QR code';
+                                el.canvas.style.display = 'none';
+                            }
+                            throw new Error('Bad Request - Invalid QR code');
+                        }
                     }
-                }
-                return response.json();
-            })
-            .then(data => {
-                let message = "Name: " + data.name + "\n" + "Email: " + data.email + "\n" + "Amount: " + data.amount;
-                el.result.innerText = message;
-                el.canvas.style.display = 'none';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                el.result.innerText = 'Invalid QR code';
-                el.canvas.style.display = 'none';
-            });
+                    return response.json();
+                })
+                .then(data => {
+                    let message = "Name: " + data.name + "\n" + "Email: " + data.email + "\n" + "Amount: " + data.amount;
+                    el.result.innerText = message;
+                    el.canvas.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    el.result.innerText = 'Invalid QR code';
+                    el.canvas.style.display = 'none';
+                });
+        }
+        el.status.innerText = 'Validating QR code...';
     }
 }
 
@@ -121,6 +127,31 @@ function detect(source) {
         return Promise.resolve()
     }
 }
+
+function detectImg() {
+    detectVideo(false)
+
+    if (el.video.srcObject) {
+        el.video.srcObject.getTracks().forEach(track => track.stop())
+        el.video.srcObject = null
+    }
+
+    // FF needs some time to properly update decode()
+    setTimeout(() => el.img.decode().then(() => detect(el.img)), 100);
+}
+
+el.fileInput.addEventListener('change', event => {
+    //el.imgBtn.className = 'button-primary'
+
+    el.img.src = URL.createObjectURL(el.fileInput.files[0])
+    // el.fileInput.value = null
+    detectImg();
+})
+
+
+el.imgBtn.addEventListener('click', event => {
+    el.fileInput.dispatchEvent(new MouseEvent('click'))
+})
 
 function detectVideo(active) {
     if (active) {

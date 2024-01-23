@@ -71,3 +71,45 @@ body {
   background-image: radial-gradient(rgb(227, 227, 227) 5%, rgb(227, 227, 227) 25%, rgb(240, 240, 240) 35%); 
   /* border-radius: 25px; */
 }
+
+#status {
+  display: none;
+}
+
+#img {
+  display: none;
+}
+
+.upload-container {
+  position: relative;
+  text-align: center;
+  display: block;
+}
+
+.file-input {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-button {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 10px 10px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.upload-button:hover {
+  background-color: #2980b9;
+}
+
+#canvas {
+  display: none;
+}
