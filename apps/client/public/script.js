@@ -42,12 +42,16 @@ function checkQRCodeValidity(qrCode) {
                             if (el.result.innerText != '' && el.result.innerText != 'Invalid QR code') {
                                 el.result.innerText = 'Invalid QR code';
                                 el.canvas.style.display = 'none';
+                                el.videoContainer.style.display = 'none';
+                                el.overlay.style.display = 'none';
                             }
                             throw new Error('Bad Request - Invalid QR code');
                         } else {
                             if (el.result.innerText != '' && el.result.innerText != 'Invalid QR code') {
                                 el.result.innerText = 'Invalid QR code';
                                 el.canvas.style.display = 'none';
+                                el.videoContainer.style.display = 'none';
+                                el.overlay.style.display = 'none';
                             }
                             throw new Error('Bad Request - Invalid QR code');
                         }
@@ -58,11 +62,23 @@ function checkQRCodeValidity(qrCode) {
                     let message = "Name: " + data.name + "\n" + "Email: " + data.email + "\n" + "Amount: " + data.amount;
                     el.result.innerText = message;
                     el.canvas.style.display = 'none';
+                    el.videoBtn.style.display = 'none';
+                    el.video.style.display = 'none';
+                    el.imgBtn.style.display = 'none';
+                    el.videoContainer.style.display = 'none';
+                    el.overlay.style.display = 'none';
+                    el.resultContainer.style.display = 'block';
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     el.result.innerText = 'Invalid QR code';
                     el.canvas.style.display = 'none';
+                    el.videoBtn.style.display = 'none';
+                    el.video.style.display = 'none';
+                    el.imgBtn.style.display = 'none';
+                    el.videoContainer.style.display = 'none';
+                    el.overlay.style.display = 'none';
+                    el.resultContainer.style.display = 'block';
                 });
         }
         el.status.innerText = 'Validating QR code...';
@@ -99,6 +115,16 @@ function detect(source) {
         return zbarWasm
             .scanImageData(imageData)
             .then(symbols => {
+                if(el.status.innerText == 'Scanning...' && symbols.length === 0) {
+                    el.result.innerText = 'Invalid QR code';
+                    el.canvas.style.display = 'none';
+                    el.videoBtn.style.display = 'none';
+                    el.video.style.display = 'none';
+                    el.imgBtn.style.display = 'none';
+                    el.resultContainer.style.display = 'block';
+                    el.videoContainer.style.display = 'none';
+                    el.overlay.style.display = 'none';
+                }
                 symbols.forEach(symbol => {
                     const lastPoint = symbol.points[symbol.points.length - 1]
                     ctx.moveTo(lastPoint.x, lastPoint.y)
@@ -122,15 +148,14 @@ function detect(source) {
                     checkQRCodeValidity(rawValue);
                 }
             })
-
     } else {
         return Promise.resolve()
     }
 }
 
 function detectImg() {
-    detectVideo(false)
-
+    detectVideo(false);
+    el.status.innerText = 'Scanning...';
     if (el.video.srcObject) {
         el.video.srcObject.getTracks().forEach(track => track.stop())
         el.video.srcObject = null
@@ -141,10 +166,7 @@ function detectImg() {
 }
 
 el.fileInput.addEventListener('change', event => {
-    //el.imgBtn.className = 'button-primary'
-
-    el.img.src = URL.createObjectURL(el.fileInput.files[0])
-    // el.fileInput.value = null
+    el.img.src = URL.createObjectURL(el.fileInput.files[0]);
     detectImg();
 })
 
@@ -160,7 +182,9 @@ function detectVideo(active) {
                 if (el.result.innerText !== '') { // If a QR code is detected
                     el.video.srcObject.getTracks().forEach(track => track.stop()); // Stop the video stream
                     el.video.srcObject = null;
-                    detectVideo(false);
+                    // detectVideo(false);
+                    cancelAnimationFrame(requestId);
+                    requestId = null;
                 } else {
                     requestId = requestAnimationFrame(() => detectVideo(true)); // Continue detection
                 }
@@ -173,6 +197,10 @@ function detectVideo(active) {
 
 el.videoBtn.addEventListener('click', event => {
     if (!requestId) {
+        el.videoBtn.style.display = 'none';
+        el.video.style.display = 'block';
+        el.videoContainer.style.display = 'block';
+        el.overlay.style.display = 'block';
         navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } })
             .then(stream => {
                 el.video.srcObject = stream
